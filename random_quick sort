@@ -1,0 +1,68 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+// Global counter for number of comparisons
+long long comparisons = 0;
+
+int partition_randomized(vector<int> &arr, int start, int end)
+{
+    // Choose a random pivot index between start and end
+    int randomIndex = start + rand() % (end - start + 1);
+    swap(arr[randomIndex], arr[end]);  // Move random pivot to end
+
+    int pos = start;
+    for (int i = start; i <= end; i++)
+    {
+        comparisons++;  // Count this comparison: arr[i] <= arr[end]
+        if (arr[i] <= arr[end])
+        {
+            swap(arr[i], arr[pos]);
+            pos++;
+        }
+    }
+    return pos - 1; // Final position of pivot
+}
+
+void randomized_quicksort(vector<int> &arr, int start, int end)
+{
+    if (start >= end)
+        return;
+
+    int pivot = partition_randomized(arr, start, end);
+
+    randomized_quicksort(arr, start, pivot - 1);
+    randomized_quicksort(arr, pivot + 1, end);
+}
+
+int main()
+{
+    srand(time(0)); // Initialize random seed
+
+    int n;
+    cout << "Enter number of elements: ";
+    cin >> n;
+
+    vector<int> arr(n);
+    cout << "Enter elements:\n";
+    for (int i = 0; i < n; i++)
+    {
+        cin >> arr[i];
+    }
+
+    randomized_quicksort(arr, 0, n - 1);
+
+    cout << "Sorted array: ";
+    for (int i = 0; i < n; i++)
+    {
+        cout << arr[i] << " ";
+    }
+    cout << "\n";
+
+    cout << "Number of comparisons: " << comparisons << endl;
+
+    return 0;
+}
