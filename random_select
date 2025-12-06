@@ -1,0 +1,68 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+// Partition with randomized pivot
+int partition_randomized(vector<int> &arr, int start, int end) {
+    // choose random pivot index between start and end
+    int randomIndex = start + rand() % (end - start + 1);
+    swap(arr[randomIndex], arr[end]); // move random pivot to end
+
+    int pos = start;
+    for (int i = start; i <= end; i++) {
+        if (arr[i] <= arr[end]) {
+            swap(arr[i], arr[pos]);
+            pos++;
+        }
+    }
+    return pos - 1; // final pivot position
+}
+
+// Returns i-th smallest element (i is 1-based)
+int randomized_select(vector<int> &arr, int start, int end, int i) {
+    if (start == end) {
+        return arr[start];
+    }
+
+    int pivot = partition_randomized(arr, start, end);
+    int k = pivot - start + 1; // number of elements in left part incl. pivot
+
+    if (i == k)
+        return arr[pivot];                   // pivot is the i-th smallest
+    else if (i < k)
+        return randomized_select(arr, start, pivot - 1, i);        // go left
+    else
+        return randomized_select(arr, pivot + 1, end, i - k);      // go right
+}
+
+int main() {
+    srand(time(0)); // initialize random seed
+
+    int n;
+    cout << "Enter number of elements: ";
+    cin >> n;
+
+    vector<int> arr(n);
+    cout << "Enter elements:\n";
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+
+    int i;
+    cout << "Enter i (to find the i-th smallest element): ";
+    cin >> i;
+
+    if (i < 1 || i > n) {
+        cout << "Invalid i. It should be between 1 and " << n << ".\n";
+        return 0;
+    }
+
+    int ans = randomized_select(arr, 0, n - 1, i);
+
+    cout << "The " << i << "-th smallest element is: " << ans << endl;
+
+    return 0;
+}
