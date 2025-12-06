@@ -1,0 +1,82 @@
+#include<iostream>
+#include<vector>
+#include<string>
+using namespace std;
+
+void lpsfind(vector<int>& longps, const string& s)
+{
+    int n = s.size();
+    int prefix = 0, suffix = 1;
+    longps[0] = 0; // first value is always 0
+
+    while (suffix < n)
+    {
+        if (s[prefix] == s[suffix])  // ✅ compare characters, not longps[]
+        {
+            longps[suffix] = prefix + 1;
+            prefix++;
+            suffix++;
+        }
+        else
+        {
+            if (prefix == 0)
+            {
+                longps[suffix] = 0;
+                suffix++;
+            }
+            else
+            {
+                prefix = longps[prefix - 1];
+            }
+        }
+    }
+}
+
+int stringmatching(string haystack, string needle)
+{
+    if (needle.empty()) return 0; // optional handling
+
+    vector<int> lps(needle.size(), 0);
+    lpsfind(lps, needle);
+
+    int first = 0, second = 0;
+    while (first < (int)haystack.size() && second < (int)needle.size())
+    {
+        if (haystack[first] == needle[second])
+        {
+            first++;
+            second++;
+        }
+        else
+        {
+            if (second == 0)
+                first++;
+            else
+                second = lps[second - 1];
+        }
+    }
+
+    if (second == (int)needle.size())
+    {
+        return first - second;   // match found at this index
+    }
+    return -1; // ❌ not found
+}
+
+int main()
+{
+    string text, pattern;
+    cout << "Enter text: ";
+    getline(cin, text);
+    cout << "Enter pattern: ";
+    getline(cin, pattern);
+
+    int idx = stringmatching(text, pattern);
+
+    if (idx == -1)
+        cout << "Pattern not found\n";
+    else
+        cout << "Pattern found at index: " << idx << endl;
+
+    return 0;
+}
