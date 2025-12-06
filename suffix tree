@@ -1,0 +1,66 @@
+#include <iostream>
+#include <map>
+#include <string>
+using namespace std;
+
+// Node of Suffix Trie
+struct Node {
+    map<char, Node*> child;
+    bool isEnd;  // not strictly needed for substring search, but kept for completeness
+    Node() : isEnd(false) {}
+};
+
+class SuffixTrie {
+    Node* root;
+
+public:
+    SuffixTrie(const string& text) {
+        root = new Node();
+        bruteForceSuffixTrie(text);
+    }
+
+    // Builds a suffix trie by inserting all suffixes of 'text'
+    void bruteForceSuffixTrie(const string& text) {
+        int n = text.size();
+        for (int i = 0; i < n; i++) {         // for each suffix starting at i
+            Node* cur = root;
+            for (int j = i; j < n; j++) {     // insert text[i..n-1]
+                char c = text[j];
+                if (cur->child[c] == nullptr)
+                    cur->child[c] = new Node();
+                cur = cur->child[c];
+            }
+            cur->isEnd = true;
+        }
+    }
+
+    // Returns true if 'pattern' is a substring of the original text
+    bool search(const string& pattern) {
+        Node* cur = root;
+        for (char c : pattern) {
+            if (cur->child[c] == nullptr)
+                return false;
+            cur = cur->child[c];
+        }
+        return true;
+    }
+};
+
+int main() {
+    string text, pattern;
+
+    cout << "Enter text: ";
+    getline(cin, text);
+
+    cout << "Enter pattern to search: ";
+    getline(cin, pattern);
+
+    SuffixTrie st(text);
+
+    if (st.search(pattern))
+        cout << "Pattern FOUND as a substring.\n";
+    else
+        cout << "Pattern NOT FOUND.\n";
+
+    return 0;
+}
