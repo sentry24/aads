@@ -1,0 +1,124 @@
+#include <iostream>
+using namespace std;
+
+class BTreeNode {
+public:
+    int t = 2;                 // minimum degree
+    int keys[3];               // max 2t-1 = 3 keys
+    BTreeNode* child[4];       // max 2t = 4 children
+    int n;                     // current number of keys
+    bool leaf;
+
+    BTreeNode(bool isLeaf) {
+        leaf = isLeaf;
+        n = 0;
+        for (int i = 0; i < 4; i++) child[i] = nullptr;
+    }
+
+    void traverse() {
+        int i;
+        for (i = 0; i < n; i++) {
+            if (!leaf) child[i]->traverse();
+            cout << keys[i] << " ";
+        }
+        if (!leaf) child[i]->traverse();
+    }
+};
+
+class BTree {
+public:
+    BTreeNode* root;
+
+    BTree() { root = nullptr; }
+
+    // -------- INSERT OPERATION --------
+    void insert(int k) {
+        if (root == nullptr) {
+            root = new BTreeNode(true);
+            root->keys[0] = k;
+            root->n = 1;
+            return;
+        }
+
+        if (root->n == 3) { // root full
+            BTreeNode* newRoot = new BTreeNode(false);
+            newRoot->child[0] = root;
+            splitChild(newRoot, 0, root);
+
+            int i = (newRoot->keys[0] < k);
+            insertNonFull(newRoot->child[i], k);
+            root = newRoot;
+        }
+        else {
+            insertNonFull(root, k);
+        }
+    }
+
+    void splitChild(BTreeNode* parent, int i, BTreeNode* y) {
+        BTreeNode* z = new BTreeNode(y->leaf);
+        z->n = 1;
+        z->keys[0] = y->keys[2];
+
+        if (!y->leaf) {
+            z->child[0] = y->child[2];
+            z->child[1] = y->child[3];
+        }
+
+        y->n = 1;
+
+        for (int j = parent->n; j >= i + 1; j--)
+            parent->child[j + 1] = parent->child[j];
+
+        parent->child[i + 1] = z;
+
+        for (int j = parent->n - 1; j >= i; j--)
+            parent->keys[j + 1] = parent->keys[j];
+
+        parent->keys[i] = y->keys[1];
+        parent->n++;
+    }
+
+    void insertNonFull(BTreeNode* node, int k) {
+        int i = node->n - 1;
+
+        if (node->leaf) {
+            while (i >= 0 && node->keys[i] > k) {
+                node->keys[i + 1] = node->keys[i];
+                i--;
+            }
+            node->keys[i + 1] = k;
+            node->n++;
+        }
+        else {
+            while (i >= 0 && node->keys[i] > k) i--;
+            i++;
+
+            if (node->child[i]->n == 3) {
+                splitChild(node, i, node->child[i]);
+                if (k > node->keys[i]) i++;
+            }
+            insertNonFull(node->child[i], k);
+        }
+    }
+
+    void traverse() {
+        if (root != nullptr) root->traverse();
+    }
+};
+
+int main() {
+    BTree t;
+
+    t.insert(10);
+    t.insert(20);
+    t.insert(5);
+    t.insert(6);
+    t.insert(12);
+    t.insert(30);
+    t.insert(7);
+    t.insert(17);
+
+    cout << "B-Tree traversal: ";
+    t.traverse();
+    cout << endl;
+}
