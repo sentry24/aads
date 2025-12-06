@@ -1,0 +1,83 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Structure to store an edge
+struct Edge {
+    int u, v, w; // u -- v with weight w
+};
+
+// Disjoint Set Union (Union-Find) structure
+struct DSU {
+    vector<int> parent, rank;
+
+    DSU(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        for(int i = 0; i < n; i++)
+            parent[i] = i;
+    }
+
+    int find(int x) {
+        if(parent[x] != x)
+            parent[x] = find(parent[x]); // path compression
+        return parent[x];
+    }
+
+    bool unite(int x, int y) {
+        int rx = find(x);
+        int ry = find(y);
+        if(rx == ry) return false; // already in same set (cycle)
+
+        // union by rank
+        if(rank[rx] < rank[ry]) {
+            parent[rx] = ry;
+        } else if(rank[rx] > rank[ry]) {
+            parent[ry] = rx;
+        } else {
+            parent[ry] = rx;
+            rank[rx]++;
+        }
+        return true;
+    }
+};
+
+int main() {
+    int V, E;
+    cout << "Enter number of vertices and edges: ";
+    cin >> V >> E;
+
+    vector<Edge> edges(E);
+
+    cout << "Enter edges as: u v w (0-based vertices)\n";
+    for(int i = 0; i < E; i++) {
+        cin >> edges[i].u >> edges[i].v >> edges[i].w;
+    }
+
+    // Sort edges by weight (non-decreasing)
+    sort(edges.begin(), edges.end(), [](const Edge &a, const Edge &b) {
+        return a.w < b.w;
+    });
+
+    DSU dsu(V);
+    vector<Edge> mst;
+    int mst_weight = 0;
+
+    // Kruskal's algorithm
+    for(const auto &e : edges) {
+        if(dsu.unite(e.u, e.v)) {
+            mst.push_back(e);
+            mst_weight += e.w;
+        }
+    }
+
+    cout << "\nEdges in the Minimum Spanning Tree:\n";
+    for(const auto &e : mst) {
+        cout << e.u << " -- " << e.v << " (weight " << e.w << ")\n";
+    }
+
+    cout << "Total weight of MST = " << mst_weight << endl;
+
+    return 0;
+}
